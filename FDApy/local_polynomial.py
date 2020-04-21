@@ -123,7 +123,7 @@ def _compute_kernel(x, x0, h, kernel='gaussian'):
         raise ValueError("""
         x and x0 do not have the same dimension!""")
 
-    t = np.sqrt(np.sum(np.power(x - x0[:, np.newaxis], 2), axis=0)) / h
+    t = np.sqrt(np.sum(np.power(x - x0, 2), axis=0)) / h
 
     if kernel is 'gaussian':
         K = _gaussian(t)

@@ -107,10 +107,10 @@ def _plot_irregular(data, main="", xlab="", ylab=""):
 
     if np.mean(data.nObsPoint()) > 20:
         for fd in data:
-            ax.plot(np.array(fd.argvals[0]), fd.values[0])
+            ax.plot(np.array(fd.argvals), fd.values)
     else:
         for fd in data:
-            ax.scatter(np.array(fd.argvals[0]), fd.values[0])
+            ax.scatter(np.array(fd.argvals), fd.values)
 
     return fig, ax
 

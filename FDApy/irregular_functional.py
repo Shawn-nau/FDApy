@@ -34,15 +34,14 @@ def _check_argvals(argvals):
             not all([isinstance(i, np.ndarray) for i in argvals]):
         raise ValueError(
             'argvals has to be a list of numpy.ndarray or a numpy.ndarray!')
-    if isinstance(argvals, np.ndarray):
-        argvals = [argvals]
+    # if isinstance(argvals, np.ndarray):
+    #    argvals = [argvals]
 
     # Check if all entries of `argvals` are numeric.
-    argvals_ = list(itertools.chain.from_iterable(argvals))
+    argvals_ = np.hstack(argvals)
     if not all([type(i) in (int, float, np.int_, np.float_)
-                for i in argvals_]):
-        raise ValueError(
-            'All argvals elements must be numeric!')
+               for i in argvals_]):
+        raise ValueError('All argvals elements must be numeric!')
 
     return argvals
 
@@ -61,9 +60,10 @@ def _check_values(values):
     """
 
     # TODO: Modify the function to deal with other types of data.
-    if isinstance(values, np.ndarray):
-        values = [values]
-    if not all([isinstance(i, np.ndarray) for i in values]):
+    if not isinstance(values, np.ndarray):
+        raise ValueError('values has to be a numpy array!')
+    if not all([isinstance(i, np.ndarray) or isinstance(i, np.float_)
+               for i in values]):
         raise ValueError('values has to be a list of numpy array!')
 
     return values
@@ -87,7 +87,7 @@ def _check_argvals_values(argvals, values):
     if len(argvals) != len(values):
         raise ValueError(
             'argvals and values elements have different support dimensions!')
-    if [len(i) for i in argvals] != [len(i) for i in values]:
+    if np.hstack(argvals).shape != np.hstack(values).shape:
         raise ValueError(
             'argvals and values have different numbers of sampling points!')
 
@@ -136,12 +136,13 @@ class IrregularFunctionalData(object):
         self.values = values
 
         if standardize:
-            argvals_stand = []
-            for argval in self.argvals:
-                if len(argval) > 1:
-                    argvals_stand.append(rangeStandardization_(argval))
-                else:
-                    argvals_stand.append(tuple([0]))
+            argvals_stand = np.zeros_like(argvals)
+            if isinstance(argvals[0], np.ndarray):
+                for idx, argval in enumerate(self.argvals):
+                    argvals_stand[idx] = rangeStandardization_(argval)
+            else:
+                argvals_stand = rangeStandardization_(argvals)
+
             self.argvals_stand = argvals_stand
 
     def __repr__(self):
@@ -225,7 +226,10 @@ class IrregularFunctionalData(object):
             Number of observations of the object.
 
         """
-        n = len(self.values)
+        if hasattr(self.values[0], '__len__'):
+            n = len(self.values)
+        else:
+            n = 1
         return n
 
     def rangeObs(self):
@@ -237,7 +241,7 @@ class IrregularFunctionalData(object):
             Tuple containing the minimum and maximum number of all the
             observations for an object.
         """
-        values_ = list(itertools.chain.from_iterable(self.values))
+        values_ = np.hstack(self.values)
         return min(values_), max(values_)
 
     def nObsPoint(self):
@@ -250,7 +254,8 @@ class IrregularFunctionalData(object):
             correspond to the number of sampling points of the i-th observed
             function.
         """
-        n = [len(i) for i in self.values]
+        n = [len(i) if hasattr(i, '__len__') else len(self.values)
+             for i in self.values]
         return n
 
     def rangeObsPoint(self):
@@ -263,7 +268,7 @@ class IrregularFunctionalData(object):
             points for an object.
 
         """
-        argvals_ = list(itertools.chain.from_iterable(self.argvals))
+        argvals_ = np.hstack(self.argvals)
         return min(argvals_), max(argvals_)
 
     def dimension(self):

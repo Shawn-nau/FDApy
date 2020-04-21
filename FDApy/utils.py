@@ -26,8 +26,11 @@ def rangeStandardization_(X):
     >>>rangeStandardization_(np.array([0, 5, 10]))
     array([0., 0.5, 1.])
     """
-    range_ = (X - np.min(X)) / (np.max(X) - np.min(X))
-    return range_
+    if X.shape == (1,):
+        range_ = 0
+    else:
+        range_ = (X - np.min(X)) / (np.max(X) - np.min(X))
+    return np.array(range_)
 
 
 def rowMean_(X):

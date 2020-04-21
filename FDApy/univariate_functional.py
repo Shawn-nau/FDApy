@@ -372,7 +372,7 @@ class UnivariateFunctionalData(object):
         for row in self.values:
             argvals.append(self.argvals[0])
             values.append(np.array(row))
-        return IrregularFunctionalData(argvals, values)
+        return IrregularFunctionalData(np.array(argvals), np.array(values))
 
     def mean(self, smooth=False, method='LocalLinear', **kwargs):
         """Compute the mean function.
@@ -633,7 +633,7 @@ class UnivariateFunctionalData(object):
 
         data = self.asIrregularFunctionalData()
         data_smooth = data.smooth(t0, k0,
-                                  points=None, degree=0,
-                                  kernel='epanechnikov', bandwidth=None)
+                                  points=points, degree=degree,
+                                  kernel=kernel, bandwidth=bandwidth)
 
         return data_smooth
